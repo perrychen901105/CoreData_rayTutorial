@@ -66,7 +66,19 @@ class ViewController: UIViewController {
     }
   
   @IBAction func segmentedControl(control: UISegmentedControl) {
+    let selectedValud = control.titleForSegmentAtIndex(control.selectedSegmentIndex)
     
+    let request = NSFetchRequest(entityName: "Bowtie")
+    
+    request.predicate = NSPredicate(format: "searchKey == %@", selectedValud!)
+    
+    do {
+        let results = try managedContext.executeFetchRequest(request) as! [Bowtie]
+        currentBowtie = results.first
+        populate(currentBowtie)
+    } catch let error as NSError {
+        print("Could not fetch \(error), \(error.userInfo)")
+    }
   }
   
   @IBAction func wear(sender: AnyObject) {
@@ -115,6 +127,10 @@ class ViewController: UIViewController {
             populate(currentBowtie)
         } catch let error as NSError {
             print("Could not save \(error), \(error.userInfo)")
+            
+            if error.domain == NSCocoaErrorDomain && (error.code == NSValidationNumberTooLargeError || error.code == NSValidationNumberTooSmallError) {
+                rate(currentBowtie)
+            }
         }
     }
     
